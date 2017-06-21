@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>深圳行云创新科技有限公司</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./bootstrap.min.css">
+    <link rel="stylesheet" href="./codemirror/codemirror.css">
+
+    <script type="text/javascript" src="./angular.min.js"></script>
+    <script type="text/javascript" src="./codemirror/codemirror.js"></script>
+    <script type="text/javascript" src="./codemirror/mode/shell.js"></script>
+    <style type="text/css">
+        form {
+            width: 800px;
+            margin-top: 20px;
+        }
+        button {width: 100px;}
+        .terminal-container {
+            /*border: 1px solid #ddd;*/
+            margin: 10px 10px 10px 40px;
+            /*padding: 10px;*/
+            /*-webkit-border-radius: 5px;*/
+            /*-moz-border-radius: 5px;*/
+            /*border-radius: 5px;*/
+        }
+        .terminal {
+        }
+        .terminal .CodeMirror {
+            height: auto;
+        }
+    </style>
+</head>
+<body ng-app="app" ng-controller="abCtrl">
+<form name="fm" class="form-horizontal" novalidate="novalidate">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">压测地址：</label>
+        <div class="col-sm-10">
+            <input ng-model="form.url" type="url" class="form-control" placeholder="请输入测试地址" required>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">并发数：</label>
+        <div class="col-sm-3">
+            <input ng-model="form.c" type="number" class="form-control" placeholder="请输入并发数" required>
+        </div>
+        <label class="col-sm-2 control-label">总请求数：</label>
+        <div class="col-sm-3">
+            <input ng-model="form.n" type="number" class="form-control" placeholder="请输入总请求数" required>
+        </div>
+        <div class="col-sm-2">
+            <button data-ng-disabled="!fm.$valid" ng-click="submint()" type="button" class="btn btn-success">测试</button>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="panel panel-primary terminal-container">
+            <div class="panel-heading">测试结果</div>
+            <div class="panel-body">
+                <div class="terminal" terminal="result"></div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    var app = angular.module("app", []);
+    app.directive("terminal", function () {
+        return {
+            restrict: 'A',
+            scope: {
+                log: '=terminal'
+            },
+            link: function (scope, element) {
+                var editor = CodeMirror(element[0], {
+                    mode: 'shell',
+                    lineNumbers: true,
+                    matchBrackets: true
+                });
+                scope.$watch(function () {
+                    return scope.log;
+                }, function () {
+//                    console.log(scope.log);
+                    editor.setValue(scope.log);
+                }, true)
+            }
+        }
+    });
+    app.controller("abCtrl", function($scope, $http) {
+        $scope.form = {};
+        $scope.result = '';
+
+        /*$scope.form = {
+            url: 'http://member.dev.cloudtogo.cn/index.html',
+            c: 10,
+            n: 100
+        };*/
+
+//        console.log($scope.form);
+
+        $scope.submint = function () {
+            $scope.result = '';
+            $http.post('./test', $scope.form).success(function (response) {
+                $scope.result = response;
+            });
+        };
+    });
+</script>
+</body>
+</html>
